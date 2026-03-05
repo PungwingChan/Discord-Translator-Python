@@ -1,0 +1,7 @@
+adminPassword=mDyj0Jw5NbFsAqVO
+discordToken=MC4wNzgwNDgwNDcwMjAwMTI3.g1MyVX.HvmD31OcD8I6UNlEueIE0yeXZRb
+translateApiUrl=https://libretranslate.com
+translateApiKey=
+botStatus=offline
+commandPrefix=!
+supportedLanguages=zh,en,ja,ko,fr,de,es,ru
