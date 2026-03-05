@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌸 Discord Translation Bot - Sakura Panel</title>
+  <style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #ffeef8 0%, #ffe4f1 50%, #ffd9ec 100%);
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.sakura-container {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 1; overflow: hidden;
+}
+.sakura-container::before, .sakura-container::after {
+  content: '🌸'; position: absolute;
+  font-size: 20px; opacity: 0.6;
+  animation: sakura-fall 15s infinite linear;
+}
+.sakura-container::before { left: 10%; animation-delay: 0s; }
+.sakura-container::after  { left: 80%; animation-delay: 7s; }
+
+@keyframes sakura-fall {
+  0%   { top: -10%; transform: translateX(0) rotate(0deg); }
+  50%  { transform: translateX(30px) rotate(180deg); }
+  100% { top: 110%; transform: translateX(0) rotate(360deg); }
+}
+
+.container { max-width: 1000px; margin: 0 auto; position: relative; z-index: 2; }
+
+.header {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #ffdde1 100%);
+  color: #fff; padding: 25px 30px; border-radius: 20px 20px 0 0;
+  box-shadow: 0 8px 30px rgba(255,105,180,0.3);
+  display: flex; justify-content: space-between; align-items: center;
+  border: 3px solid #ffc0cb; position: relative; overflow: hidden;
+}
+.header::before {
+  content: ''; position: absolute; top: -50%; right: -10%;
+  width: 200px; height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+  border-radius: 50%;
+}
+.header-title { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+.header-title .icon { font-size: 2.5em; animation: float 3s ease-in-out infinite; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+.header-title h1 { font-size: 1.8em; font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+.version {
+  background: rgba(255,255,255,0.3); padding: 4px 12px;
+  border-radius: 15px; font-size: 0.75em; font-weight: 600; backdrop-filter: blur(10px);
+}
+
+.status-badge {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.95); padding: 10px 20px;
+  border-radius: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 2px solid #fff;
+}
+.status-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #9e9e9e; animation: pulse 2s infinite;
+}
+.status-badge.online  .status-dot { background: #4caf50; }
+.status-badge.offline .status-dot { background: #f44336; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.status-text { color: #333; font-weight: 600; font-size: 0.95em; }
+
+.content {
+  background: rgba(255,255,255,0.95); padding: 25px;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 10px 40px rgba(255,105,180,0.15);
+  border: 3px solid #ffc0cb; border-top: none; backdrop-filter: blur(10px);
+}
+
+.readonly-banner {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffe5a1 100%);
+  border: 2px solid #ffc107; padding: 12px 20px; border-radius: 12px;
+  margin-bottom: 20px; text-align: center; color: #856404; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.admin-info {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  border: 2px solid #28a745; padding: 10px 20px; border-radius: 12px;
+  margin-bottom: 20px; text-align: center; color: #155724; font-weight: 600;
+}
+.btn-link {
+  background: none; border: none; color: #007bff;
+  text-decoration: underline; cursor: pointer; font-weight: 600;
+}
+
+.card-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px; margin-bottom: 25px;
+}
+.info-card {
+  background: linear-gradient(135deg, #fff0f5 0%, #fce4ec 100%);
+  border: 2px solid #f8bbd0; border-radius: 15px; padding: 20px;
+  display: flex; align-items: center; gap: 15px; transition: all 0.3s;
+  box-shadow: 0 4px 15px rgba(248,187,208,0.2);
+}
+.info-card:hover {
+  transform: translateY(-5px); box-shadow: 0 8px 25px rgba(248,187,208,0.4);
+  border-color: #f48fb1;
+}
+.card-icon { font-size: 2.5em; filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.1)); }
+.card-content { flex: 1; }
+.card-label  { color: #d81b60; font-size: 0.85em; font-weight: 600; margin-bottom: 5px; }
+.card-value  { color: #5d4037; font-size: 1.2em; font-weight: 700; }
+
+.section {
+  background: #fff; border: 2px solid #fce4ec; border-radius: 15px;
+  padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+.section-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #fce4ec;
+}
+.section-header h2 { color: #d81b60; font-size: 1.3em; font-weight: 700; }
+.section-actions { display: flex; gap: 8px; }
+.btn-icon {
+  background: none; border: 2px solid #f8bbd0; color: #d81b60;
+  width: 35px; height: 35px; border-radius: 8px; cursor: pointer;
+  font-size: 1.1em; transition: all 0.3s;
+}
+.btn-icon:hover { background: #fce4ec; transform: scale(1.1); }
+
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px; color: #5d4037; font-weight: 600;
+}
+.label-icon { font-size: 1.2em; }
+.form-group input, .form-group textarea {
+  width: 100%; padding: 12px 15px; border: 2px solid #fce4ec;
+  border-radius: 10px; font-size: 0.95em; transition: all 0.3s; background: #fff;
+}
+.form-group input:focus, .form-group textarea:focus {
+  outline: none; border-color: #f48fb1; box-shadow: 0 0 0 3px rgba(244,143,177,0.1);
+}
+.form-group input:read-only, .form-group textarea:read-only {
+  background: #f9f9f9; cursor: not-allowed;
+}
+.input-wrapper { position: relative; }
+.btn-toggle-password {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; font-size: 1.2em;
+  opacity: 0.6; transition: opacity 0.3s;
+}
+.btn-toggle-password:hover { opacity: 1; }
+.form-hint { display: block; margin-top: 5px; color: #999; font-size: 0.85em; }
+
+.btn {
+  padding: 12px 30px; border: none; border-radius: 10px;
+  font-size: 1em; font-weight: 600; cursor: pointer; transition: all 0.3s;
+  display: inline-flex; align-items: center; gap: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.btn:hover   { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.btn:active  { transform: translateY(0); }
+.btn-primary   { background: linear-gradient(135deg, #f48fb1 0%, #ec407a 100%); color: white; }
+.btn-success   { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); color: white; }
+.btn-danger    { background: linear-gradient(135deg, #ef5350 0%, #e53935 100%); color: white; }
+.btn-secondary { background: linear-gradient(135deg, #bdbdbd 0%, #9e9e9e 100%); color: white; }
+.btn:disabled  { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-block     { width: 100%; justify-content: center; }
+.form-actions  { margin-top: 25px; display: flex; gap: 10px; }
+
+.control-panel { display: flex; gap: 15px; flex-wrap: wrap; }
+
+.guide-content { display: flex; flex-direction: column; gap: 15px; }
+.guide-item {
+  display: flex; gap: 15px; padding: 15px;
+  background: #fafafa; border-radius: 10px; border-left: 4px solid #f48fb1;
+}
+.guide-icon { font-size: 2em; flex-shrink: 0; }
+.guide-text strong { color: #d81b60; display: block; margin-bottom: 5px; }
+.guide-text p { color: #666; line-height: 1.6; }
+.guide-text a { color: #ec407a; text-decoration: none; font-weight: 600; }
+.guide-text a:hover { text-decoration: underline; }
+.command-examples {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  padding: 20px; border-radius: 10px; border: 2px solid #90caf9;
+}
+.example-title { color: #1976d2; font-weight: 600; margin-bottom: 12px; }
+.example-list  { display: flex; flex-direction: column; gap: 8px; }
+.example-list code {
+  background: #fff; padding: 10px 15px; border-radius: 8px;
+  font-family: 'Consolas', monospace; color: #d81b60; border: 1px solid #e3f2fd;
+}
+
+.logs-container {
+  height: 250px; overflow-y: auto; background: #fafafa;
+  border: 2px solid #fce4ec; border-radius: 10px;
+  padding: 15px; font-family: 'Consolas', monospace; font-size: 0.9em;
+}
+.log-entry {
+  margin-bottom: 8px; padding: 8px 12px; border-radius: 6px;
+  display: flex; align-items: flex-start; gap: 10px;
+  line-height: 1.5; animation: slideIn 0.3s ease;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.log-time { color: #999; flex-shrink: 0; }
+.log-msg  { flex: 1; }
+.log-success { background: #e8f5e9; border-left: 3px solid #4caf50; }
+.log-success .log-msg { color: #2e7d32; }
+.log-error   { background: #ffebee; border-left: 3px solid #f44336; }
+.log-error   .log-msg { color: #c62828; }
+.log-warn    { background: #fff3e0; border-left: 3px solid #ff9800; }
+.log-warn    .log-msg { color: #e65100; }
+.log-step    { background: #fce4ec; border-left: 3px solid #ec407a; }
+.log-step    .log-msg { color: #c2185b; font-weight: 600; }
+
+.footer { text-align: center; padding: 20px; color: #d81b60; font-size: 0.9em; margin-top: 20px; }
+.footer div { margin: 5px 0; }
+
+.modal {
+  display: none; position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%; background: rgba(0,0,0,0.6);
+  z-index: 10000; justify-content: center; align-items: center;
+  backdrop-filter: blur(5px);
+}
+.modal.active { display: flex; }
+.modal-content {
+  background: white; border-radius: 20px; width: 90%; max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); border: 3px solid #f8bbd0;
+  animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(-50px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.modal-header {
+  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+  color: white; padding: 20px 25px; border-radius: 17px 17px 0 0;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.modal-header h3 { margin: 0; font-size: 1.3em; }
+.modal-close {
+  background: none; border: none; color: white; font-size: 2em;
+  cursor: pointer; line-height: 1; opacity: 0.8; transition: opacity 0.3s;
+}
+.modal-close:hover { opacity: 1; }
+.modal-content form { padding: 25px; }
+
+@media (max-width: 768px) {
+  .header-title h1 { font-size: 1.3em; }
+  .card-grid, .form-grid { grid-template-columns: 1fr; }
+  .control-panel { flex-direction: column; }
+  .btn { width: 100%; justify-content: center; }
+}
+
+.logs-container::-webkit-scrollbar       { width: 8px; }
+.logs-container::-webkit-scrollbar-track { background: #fce4ec; border-radius: 10px; }
+.logs-container::-webkit-scrollbar-thumb { background: #f48fb1; border-radius: 10px; }
+.logs-container::-webkit-scrollbar-thumb:hover { background: #ec407a; }
+  </style>
+</head>
+<body>
+  <div class="sakura-container"></div>
+
+  <div class="container">
+    <div class="header">
+      <div class="header-title">
+        <span class="icon">🌸</span>
+        <h1>Discord Translation Bot</h1>
+        <span class="version">Sakura v3.0</span>
+      </div>
+      <div class="status-badge" id="bot-status">
+        <span class="status-dot"></span>
+        <span class="status-text">Loading...</span>
+      </div>
+    </div>
+
+    <div class="content">
+      <div id="auth-section">
+        <div class="readonly-banner" id="readonly-banner" style="display:none;">
+          🔒 Guest Mode — Read-only access
+          <button class="btn-link" onclick="showLoginModal()">Admin Login</button>
+        </div>
+        <div class="admin-info" id="admin-info" style="display:none;">
+          ✅ Admin Mode |
+          <a href="#" onclick="logout()" class="btn-link">Sign Out</a>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="info-card">
+          <div class="card-icon">🚀</div>
+          <div class="card-content">
+            <div class="card-label">Uptime</div>
+            <div class="card-value" id="uptime">00:00:00</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">📅</div>
+          <div class="card-content">
+            <div class="card-label">Last Active</div>
+            <div class="card-value" id="last-active">Never</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">🌐</div>
+          <div class="card-content">
+            <div class="card-label">Command Prefix</div>
+            <div class="card-value" id="cmd-prefix">!</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="card-icon">🗣️</div>
+          <div class="card-content">
+            <div class="card-label">Languages</div>
+            <div class="card-value" id="lang-count">8</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bot Configuration -->
+      <div class="section">
+        <div class="section-header">
+          <h2>⚙️ Bot Configuration</h2>
+          <div class="section-actions">
+            <button class="btn-icon" onclick="refreshConfig()" title="Refresh">🔄</button>
+          </div>
+        </div>
+
+        <form id="config-form" onsubmit="saveConfig(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label><span class="label-icon">🤖</span>Discord Bot Token</label>
+              <div class="input-wrapper">
+                <input type="password" id="discord-token" name="discordToken"
+                  placeholder="Paste your Bot Token here" readonly>
+                <button type="button" class="btn-toggle-password" onclick="togglePassword('discord-token')">👁️</button>
+              </div>
+              <span class="form-hint">Format: MTIzNDU2.GhJkLm.nOpQrStUvWxYz...</span>
+            </div>
+
+            <div class="form-group">
+              <label><span class="label-icon">🔗</span>Translation API URL</label>
+              <input type="text" id="api-url" name="translateApiUrl"
+                value="https://libretranslate.com" readonly>
+            </div>
+
+            <div class="form-group">
+              <label><span class="label-icon">🔑</span>Translation API Key (optional)</label>
+              <div class="input-wrapper">
+                <input type="password" id="api-key" name="translateApiKey"
+                  placeholder="Leave empty to use free API" readonly>
+                <button type="button" class="btn-toggle-password" onclick="togglePassword('api-key')">👁️</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><span class="label-icon">💬</span>Command Prefix</label>
+              <input type="text" id="prefix" name="commandPrefix"
+                value="!" maxlength="2" readonly>
+              <span class="form-hint">Suggested: ! / . $</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label><span class="label-icon">🌍</span>Supported Language Codes</label>
+            <textarea id="languages" name="supportedLanguages"
+              rows="2" readonly>zh, en, ja, ko, fr, de, es, ru</textarea>
+            <span class="form-hint">Comma-separated, e.g. zh, en, ja, ko</span>
+          </div>
+
+          <div class="form-actions" id="form-actions" style="display:none;">
+            <button type="submit" class="btn btn-primary">
+              <span>💾</span> Save Configuration
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bot Control -->
+      <div class="section" id="bot-control" style="display:none;">
+        <div class="section-header">
+          <h2>🎮 Bot Control</h2>
+        </div>
+        <div class="control-panel">
+          <button class="btn btn-success" onclick="startBot()" id="btn-start">
+            <span>▶️</span> Start Bot
+          </button>
+          <button class="btn btn-danger" onclick="stopBot()" id="btn-stop" disabled>
+            <span>⏹️</span> Stop Bot
+          </button>
+        </div>
+      </div>
+
+      <!-- Security Settings -->
+      <div class="section" id="security-section" style="display:none;">
+        <div class="section-header">
+          <h2>🔒 Security Settings</h2>
+        </div>
+        <form id="password-form" onsubmit="changePassword(event)">
+          <div class="form-group">
+            <label><span class="label-icon">🔐</span>New Admin Password</label>
+            <input type="password" id="new-password" name="newPassword"
+              placeholder="Enter new password (min. 6 characters)" required>
+          </div>
+          <button type="submit" class="btn btn-secondary">
+            <span>🔑</span> Update Password
+          </button>
+        </form>
+      </div>
+
+      <!-- Getting Started -->
+      <div class="section">
+        <div class="section-header">
+          <h2>📖 Getting Started</h2>
+        </div>
+        <div class="guide-content">
+          <div class="guide-item">
+            <div class="guide-icon">1️⃣</div>
+            <div class="guide-text">
+              <strong>Get a Bot Token</strong>
+              <p>Visit the <a href="https://discord.com/developers/applications" target="_blank">Discord Developer Portal</a>, create an application, and copy the Bot Token.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-icon">2️⃣</div>
+            <div class="guide-text">
+              <strong>Configure the Bot</strong>
+              <p>Paste your Token in the "Bot Configuration" section above. Optionally set a custom Translation API endpoint.</p>
+            </div>
+          </div>
+          <div class="guide-item">
+            <div class="guide-icon">3️⃣</div>
+            <div class="guide-text">
+              <strong>Start the Service</strong>
+              <p>Save your configuration, then click "Start Bot" in the "Bot Control" section.</p>
+            </div>
+          </div>
+          <div class="command-examples">
+            <div class="example-title">💡 Command Examples</div>
+            <div class="example-list">
+              <code>!tr en Hello World</code>
+              <code>!translate zh Hello</code>
+              <code>!help</code>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs -->
+      <div class="section">
+        <div class="section-header">
+          <h2>📝 Runtime Logs</h2>
+          <div class="section-actions">
+            <button class="btn-icon" onclick="clearLogs()" title="Clear logs">🗑️</button>
+          </div>
+        </div>
+        <div class="logs-container" id="logs">
+          <div class="log-entry log-success">
+            <span class="log-time">[00:00:00]</span>
+            <span class="log-msg">🌸 Sakura system ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>🌸 Sakura Panel v3.0 | Powered by Python Flask</div>
+      <div>Made with 💖 by Zero Project</div>
+    </div>
+  </div>
+
+  <!-- Login Modal -->
+  <div class="modal" id="login-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🔐 Admin Login</h3>
+        <button class="modal-close" onclick="closeLoginModal()">×</button>
+      </div>
+      <form onsubmit="login(event)">
+        <div class="form-group">
+          <label>Admin Password</label>
+          <input type="password" id="login-password" placeholder="Enter admin password" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let isAdmin = false;
+    let config  = {};
+    let startTime = Date.now();
+
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+      loadConfig();
+      startUptime();
+      createSakuraEffect();
+    });
+
+    function checkAuth() {
+      fetch('/api/auth/check')
+        .then(r => r.json())
+        .then(data => { isAdmin = data.isAdmin; updateAuthUI(); });
+    }
+
+    function updateAuthUI() {
+      const readonlyBanner  = document.getElementById('readonly-banner');
+      const adminInfo       = document.getElementById('admin-info');
+      const formActions     = document.getElementById('form-actions');
+      const botControl      = document.getElementById('bot-control');
+      const securitySection = document.getElementById('security-section');
+
+      if (isAdmin) {
+        readonlyBanner.style.display  = 'none';
+        adminInfo.style.display       = 'block';
+        formActions.style.display     = 'flex';
+        botControl.style.display      = 'block';
+        securitySection.style.display = 'block';
+        document.querySelectorAll('#config-form input, #config-form textarea')
+          .forEach(el => el.removeAttribute('readonly'));
+      } else {
+        readonlyBanner.style.display  = 'flex';
+        adminInfo.style.display       = 'none';
+        formActions.style.display     = 'none';
+        botControl.style.display      = 'none';
+        securitySection.style.display = 'none';
+        document.querySelectorAll('#config-form input, #config-form textarea')
+          .forEach(el => el.setAttribute('readonly', 'readonly'));
+      }
+    }
+
+    function loadConfig() {
+      fetch('/api/config')
+        .then(r => r.json())
+        .then(data => { config = data; updateConfigUI(); updateBotStatus(); })
+        .catch(err => addLog('Failed to load config: ' + err.message, 'error'));
+    }
+
+    function updateConfigUI() {
+      document.getElementById('discord-token').value = config.discordToken    || '';
+      document.getElementById('api-url').value       = config.translateApiUrl || 'https://libretranslate.com';
+      document.getElementById('api-key').value       = config.translateApiKey || '';
+      document.getElementById('prefix').value        = config.commandPrefix   || '!';
+      document.getElementById('languages').value     = config.supportedLanguages
+        ? config.supportedLanguages.join(', ')
+        : 'zh, en, ja, ko, fr, de, es, ru';
+      document.getElementById('cmd-prefix').textContent  = config.commandPrefix   || '!';
+      document.getElementById('lang-count').textContent  = config.supportedLanguages ? config.supportedLanguages.length : 8;
+      document.getElementById('last-active').textContent = config.lastSuccessTime  || 'Never';
+    }
+
+    function updateBotStatus() {
+      const badge    = document.getElementById('bot-status');
+      const btnStart = document.getElementById('btn-start');
+      const btnStop  = document.getElementById('btn-stop');
+
+      if (config.botStatus === 'online') {
+        badge.className = 'status-badge online';
+        badge.innerHTML = '<span class="status-dot"></span><span class="status-text">● Online</span>';
+        if (btnStart) btnStart.disabled = true;
+        if (btnStop)  btnStop.disabled  = false;
+      } else {
+        badge.className = 'status-badge offline';
+        badge.innerHTML = '<span class="status-dot"></span><span class="status-text">● Offline</span>';
+        if (btnStart) btnStart.disabled = false;
+        if (btnStop)  btnStop.disabled  = true;
+      }
+    }
+
+    function saveConfig(event) {
+      event.preventDefault();
+      if (!isAdmin) { alert('Admin privileges required!'); return; }
+      const fd = new FormData(event.target);
+      fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          discordToken:       fd.get('discordToken'),
+          translateApiUrl:    fd.get('translateApiUrl'),
+          translateApiKey:    fd.get('translateApiKey'),
+          commandPrefix:      fd.get('commandPrefix'),
+          supportedLanguages: fd.get('supportedLanguages'),
+        }),
+      })
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) { addLog('Configuration saved successfully', 'success'); loadConfig(); }
+          else addLog('Failed to save configuration', 'error');
+        })
+        .catch(err => addLog('Save error: ' + err.message, 'error'));
+    }
+
+    function startBot() {
+      if (!isAdmin) return;
+      addLog('Starting bot...', 'step');
+      fetch('/api/bot/start', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) { addLog('Bot started successfully', 'success'); setTimeout(loadConfig, 1000); }
+          else addLog('Start failed: ' + result.message, 'error');
+        });
+    }
+
+    function stopBot() {
+      if (!isAdmin) return;
+      addLog('Stopping bot...', 'step');
+      fetch('/api/bot/stop', { method: 'POST' })
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) { addLog('Bot stopped', 'warn'); setTimeout(loadConfig, 1000); }
+          else addLog('Stop failed', 'error');
+        });
+    }
+
+    function changePassword(event) {
+      event.preventDefault();
+      if (!isAdmin) return;
+      const newPassword = document.getElementById('new-password').value;
+      if (newPassword.length < 6) { alert('Password must be at least 6 characters!'); return; }
+      fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newPassword }),
+      })
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) { alert('Password updated. Please log in again.'); logout(); }
+          else alert('Failed to update password.');
+        });
+    }
+
+    function login(event) {
+      event.preventDefault();
+      fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: document.getElementById('login-password').value }),
+      })
+        .then(r => r.json())
+        .then(result => {
+          if (result.success) {
+            isAdmin = true; updateAuthUI(); closeLoginModal();
+            addLog('Admin login successful', 'success'); loadConfig();
+          } else {
+            alert('Incorrect password!');
+          }
+        });
+    }
+
+    function logout() {
+      fetch('/api/auth/logout', { method: 'POST' })
+        .then(() => { isAdmin = false; updateAuthUI(); addLog('Signed out of admin mode', 'warn'); });
+    }
+
+    function refreshConfig() { addLog('Refreshing config...', 'step'); loadConfig(); }
+
+    function clearLogs() {
+      document.getElementById('logs').innerHTML =
+        '<div class="log-entry log-success"><span class="log-time">[00:00:00]</span><span class="log-msg">🌸 Logs cleared</span></div>';
+    }
+
+    function addLog(message, type = 'info') {
+      const container = document.getElementById('logs');
+      const time  = new Date().toLocaleTimeString('en-GB', { hour12: false });
+      const icons = { success: '🌸 ', error: '❌ ', warn: '⚠️ ', step: '👉 ' };
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.innerHTML = `<span class="log-time">[${time}]</span><span class="log-msg">${icons[type] || ''}${message}</span>`;
+      container.insertBefore(entry, container.firstChild);
+      while (container.children.length > 50) container.removeChild(container.lastChild);
+    }
+
+    function startUptime() {
+      setInterval(() => {
+        const d = Date.now() - startTime;
+        const h = Math.floor(d / 3600000);
+        const m = Math.floor((d % 3600000) / 60000);
+        const s = Math.floor((d % 60000) / 1000);
+        const el = document.getElementById('uptime');
+        if (el) el.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+      }, 1000);
+    }
+
+    function pad(n) { return n.toString().padStart(2, '0'); }
+
+    function togglePassword(id) {
+      const input = document.getElementById(id);
+      const btn   = input.nextElementSibling;
+      if (input.type === 'password') { input.type = 'text';     btn.textContent = '🙈'; }
+      else                           { input.type = 'password'; btn.textContent = '👁️'; }
+    }
+
+    function showLoginModal()  { document.getElementById('login-modal').classList.add('active'); }
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.remove('active');
+      document.getElementById('login-password').value = '';
+    }
+
+    function createSakuraEffect() {
+      const container = document.querySelector('.sakura-container');
+      for (let i = 0; i < 10; i++) {
+        const s = document.createElement('div');
+        s.textContent = '🌸';
+        s.style.cssText = `position:absolute;font-size:${Math.random()*10+15}px;left:${Math.random()*100}%;opacity:${Math.random()*0.5+0.3};animation:sakura-fall ${Math.random()*10+10}s infinite linear;animation-delay:${Math.random()*5}s;`;
+        container.appendChild(s);
+      }
+    }
+
+    document.addEventListener('click', e => {
+      if (e.target === document.getElementById('login-modal')) closeLoginModal();
+    });
+  </script>
+</body>
+</html>
