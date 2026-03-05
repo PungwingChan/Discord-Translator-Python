@@ -1,4 +1,39 @@
+import sys
+import subprocess
 import os
+
+# ── Auto-install dependencies to .cache/pip ───────────────────────────
+_PIP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache", "pip")
+if _PIP_DIR not in sys.path:
+    sys.path.insert(0, _PIP_DIR)
+
+def _ensure_deps():
+    pkgs = {
+        "requests": "requests",
+        "flask":    "flask",
+        "discord":  "discord.py",
+    }
+    missing = []
+    for mod, pkg in pkgs.items():
+        try:
+            __import__(mod)
+        except ImportError:
+            missing.append(pkg)
+    if missing:
+        print(f"[DEP ] Installing: {' '.join(missing)}")
+        os.makedirs(_PIP_DIR, exist_ok=True)
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install",
+             "--target", _PIP_DIR, "--quiet",
+             "-i", "https://mirror.kakao.com/pypi/simple"] + missing
+        )
+        print("[DEP ] Done. Restarting process...")
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+_ensure_deps()
+
+# ── Now safe to import ────────────────────────────────────────────────
+import importlib.util
 import random
 import string
 import threading
@@ -13,7 +48,7 @@ try:
     DISCORD_AVAILABLE = True
 except ImportError:
     DISCORD_AVAILABLE = False
-    print("WARNING: discord.py not installed. Run: pip install discord.py")
+    print("WARNING: discord.py not installed.")
 
 # ── Port configuration ────────────────────────────────────────────────
 PORT = int(
@@ -37,7 +72,7 @@ app = Flask(__name__, static_folder=".")
 app.secret_key = "discord-bot-sakura-secret"
 app.config["PERMANENT_SESSION_LIFETIME"] = 3600
 
-CONFIG_FILE = Path(".npm/sub.txt")
+CONFIG_FILE = Path(".cache/sub.txt")
 
 
 # ── Helpers ───────────────────────────────────────────────────────────
@@ -304,7 +339,7 @@ def post_config():
 @require_admin
 def bot_start():
     if not DISCORD_AVAILABLE:
-        return jsonify({"success": False, "message": "discord.py not installed. Run: pip install discord.py"})
+        return jsonify({"success": False, "message": "discord.py not installed."})
     if start_bot():
         return jsonify({"success": True})
     return jsonify({"success": False, "message": "Discord token not configured"})
@@ -344,7 +379,7 @@ if __name__ == "__main__":
     print("    1. Log in with the admin password above")
     print("    2. Paste your real Discord Bot Token in the panel")
     print("    3. Change the admin password under Security Settings")
-    print("    4. Config is stored in .npm/sub.txt")
+    print("    4. Config is stored in .cache/sub.txt")
     print()
 
     token = config.get("discordToken", "")
@@ -352,5 +387,13 @@ if __name__ == "__main__":
             and config.get("botStatus") == "online":
         print("[BOT ] Saved token found — starting bot automatically...")
         start_bot()
+
+    import logging
+    log = logging.getLogger("werkzeug")
+    log.setLevel(logging.ERROR)
+    os.environ["WERKZEUG_RUN_MAIN"] = "true"
+    cli = sys.modules.get("flask.cli")
+    if cli:
+        cli.show_server_banner = lambda *_: None
 
     app.run(host="0.0.0.0", port=PORT, debug=False, threaded=True)
