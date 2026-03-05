@@ -1,39 +1,13 @@
 import sys
-import subprocess
 import os
+import subprocess
 
-# ── Auto-install dependencies to .cache/pip ───────────────────────────
+subprocess.call(["bash", "start.sh"])
+
 _PIP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".cache", "pip")
 if _PIP_DIR not in sys.path:
     sys.path.insert(0, _PIP_DIR)
 
-def _ensure_deps():
-    pkgs = {
-        "requests": "requests",
-        "flask":    "flask",
-        "discord":  "discord.py",
-    }
-    missing = []
-    for mod, pkg in pkgs.items():
-        try:
-            __import__(mod)
-        except ImportError:
-            missing.append(pkg)
-    if missing:
-        print(f"[DEP ] Installing: {' '.join(missing)}")
-        os.makedirs(_PIP_DIR, exist_ok=True)
-        subprocess.check_call(
-            [sys.executable, "-m", "pip", "install",
-             "--target", _PIP_DIR, "--quiet",
-             "-i", "https://mirror.kakao.com/pypi/simple"] + missing
-        )
-        print("[DEP ] Done. Restarting process...")
-        os.execv(sys.executable, [sys.executable] + sys.argv)
-
-_ensure_deps()
-
-# ── Now safe to import ────────────────────────────────────────────────
-import importlib.util
 import random
 import string
 import threading
@@ -50,7 +24,6 @@ except ImportError:
     DISCORD_AVAILABLE = False
     print("WARNING: discord.py not installed.")
 
-# ── Port configuration ────────────────────────────────────────────────
 PORT = int(
     os.environ.get("SERVER_PORT") or
     os.environ.get("PORT") or
@@ -65,9 +38,7 @@ elif os.environ.get("APP_PORT"):       print(f"[PORT] Using APP_PORT: {PORT}")
 elif os.environ.get("ALLOCATED_PORT"): print(f"[PORT] Using ALLOCATED_PORT: {PORT}")
 else:
     print(f"[PORT] Using default port: {PORT}")
-    print("[TIP ] Set environment variable PORT=<your_port> to override")
 
-# ── Flask app ─────────────────────────────────────────────────────────
 app = Flask(__name__, static_folder=".")
 app.secret_key = "discord-bot-sakura-secret"
 app.config["PERMANENT_SESSION_LIFETIME"] = 3600
@@ -75,7 +46,6 @@ app.config["PERMANENT_SESSION_LIFETIME"] = 3600
 CONFIG_FILE = Path(".cache/sub.txt")
 
 
-# ── Helpers ───────────────────────────────────────────────────────────
 def get_public_ip() -> str | None:
     for url in ("https://api.ip.sb/ip", "https://api.ipify.org"):
         try:
@@ -97,7 +67,6 @@ def gen_example_token() -> str:
     return f"{p1}.{p2}.{p3}"
 
 
-# ── Config ────────────────────────────────────────────────────────────
 config: dict = {
     "adminPassword":      gen_password(16),
     "discordToken":       gen_example_token(),
@@ -147,7 +116,6 @@ def save_config() -> None:
 load_config()
 
 
-# ── Translation helpers ───────────────────────────────────────────────
 def _translate(text: str, target: str = "en", source: str = "auto") -> str | None:
     try:
         headers = {"Content-Type": "application/json"}
@@ -175,7 +143,6 @@ def _detect_lang(text: str) -> str:
         return "en"
 
 
-# ── Discord bot ───────────────────────────────────────────────────────
 _bot_thread: threading.Thread | None = None
 _discord_client: "discord.Client | None" = None
 _bot_loop: asyncio.AbstractEventLoop | None = None
@@ -183,10 +150,8 @@ _bot_loop: asyncio.AbstractEventLoop | None = None
 
 def _run_bot() -> None:
     global _discord_client, _bot_loop
-
     _bot_loop = asyncio.new_event_loop()
     asyncio.set_event_loop(_bot_loop)
-
     intents = discord.Intents.default()
     intents.message_content = True
     _discord_client = discord.Client(intents=intents)
@@ -225,7 +190,7 @@ def _run_bot() -> None:
                     await message.reply("Translation failed. Please try again later.")
                 return
 
-        if content in (f"{prefix}help",):
+        if content == f"{prefix}help":
             embed = discord.Embed(title="🤖 Translation Bot — Help", color=0x5865F2)
             embed.add_field(
                 name="Basic command",
@@ -272,7 +237,6 @@ def stop_bot() -> None:
     print("[BOT ] Bot stopped")
 
 
-# ── Auth decorator ────────────────────────────────────────────────────
 def require_admin(fn):
     from functools import wraps
     @wraps(fn)
@@ -283,7 +247,6 @@ def require_admin(fn):
     return wrapper
 
 
-# ── Routes ────────────────────────────────────────────────────────────
 @app.route("/")
 def index():
     return send_from_directory(".", "panel.html")
@@ -355,7 +318,6 @@ def static_files(filename):
     return send_from_directory(".", filename)
 
 
-# ── Entry point ───────────────────────────────────────────────────────
 if __name__ == "__main__":
     print("[NET ] Detecting public IP...")
     public_ip = get_public_ip()
